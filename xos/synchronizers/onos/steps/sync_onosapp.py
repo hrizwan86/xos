@@ -127,8 +127,7 @@ class SyncONOSApp(SyncInstanceUsingAnsible):
                         "sshPort": "22",
                         "sshUser": "root",
                         "sshKeyFile": "/root/node_key",
-                        "publicGateways": []
-                        ],
+                        "publicGateways": [],
                         "nodes" : []
                     }
                 },
