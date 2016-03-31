@@ -117,6 +117,47 @@ class SyncONOSApp(SyncInstanceUsingAnsible):
                 raise Exception("Controller user object for %s does not exist" % instance.creator)
             return cuser.kuser_id
 
+    def _generate_vtn_config(self, o):
+        data = {
+            "apps" : {
+                "org.onosproject.cordvtn" : {
+                    "cordvtn" : {
+                        "privateGatewayMac" : "00:00:00:00:00:01",
+                        "localManagementIp": "172.27.0.1/24",
+                        "ovsdbPort": "6641",
+                        "sshPort": "22",
+                        "sshUser": "root",
+                        "sshKeyFile": "/root/node_key",
+                        "publicGateways": [
+                            {
+                                "gatewayIp": "10.168.0.1",
+                                "gatewayMac": "02:42:0a:a8:00:01"
+                            }
+                        ],
+                        "nodes" : [
+                            {
+                                "hostname": "nova-compute",
+                                "hostManagementIp": "192.168.122.28/24",
+                                "bridgeId": "of:0000000000000001",
+                                "dataPlaneIntf": "veth1",
+                                "dataPlaneIp": "192.168.199.1/24"
+                            }
+                        ]
+                    }
+                },
+                "org.onosproject.openstackinterface" : {
+                    "openstackinterface" : {
+                        "do_not_push_flows" : "true",
+                        "neutron_server" : "http://neutron-api:9696/v2.0/",
+                        "keystone_server" : "http://keystone:5000/v2.0//",
+                        "user_name" : "admin",
+                        "password" : "ADMIN_PASS"
+                    }
+                }
+            }
+        }
+        return json.dumps(data)
+
     def write_configs(self, o):
         o.config_fns = []
         o.rest_configs = []
@@ -158,8 +199,10 @@ class SyncONOSApp(SyncInstanceUsingAnsible):
         for key, value in attrs.iteritems():
             if key == "autogenerate" and value:
                 autogen.append(value)
-        for config in autogen:
-            value = "foo" # Autogenerate the config here
+        for label in autogen:
+            config = label
+            # Generate the VTN config file... where should this live?
+            value = self._generate_vtn_config(o)
             tas = TenantAttribute.objects.filter(tenant=o, name=config)
             if tas:
                 ta = tas[0]
