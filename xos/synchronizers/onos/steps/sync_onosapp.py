@@ -13,7 +13,7 @@ from synchronizers.base.ansible import run_template
 from synchronizers.base.syncstep import SyncStep
 from synchronizers.base.ansible import run_template_ssh
 from synchronizers.base.SyncInstanceUsingAnsible import SyncInstanceUsingAnsible
-from core.models import Service, Slice, ControllerSlice, ControllerUser, Node, TenantAttribute
+from core.models import Service, Slice, ControllerSlice, ControllerUser, Node, TenantAttribute, Tag
 from services.onos.models import ONOSService, ONOSApp
 from xos.logger import Logger, logging
 
@@ -145,10 +145,25 @@ class SyncONOSApp(SyncInstanceUsingAnsible):
         nodes = Node.objects.all()
         for node in nodes:
             nodeip = socket.gethostbyname(node.name)
-            mgmt_subnet_bits = "24"
+
+            # default values
+            mgmt_subnet_bits = 24
             bridgeId = "of:0000000000000001"
             dataPlaneIntf = "veth1"
             dataPlaneIp = "192.168.199.1/24"
+
+            nodetags = Tag.select_by_content_object(node)
+            if nodetags:
+                tags = nodetags.filter(name="bridgeId")
+                bridgeId = tags[0] if tags
+
+                tags = nodetags.filter(name="dataPlaneIntf")
+                dataPlaneIntf = tags[0] if tags
+
+                # Should assign from the public address pool
+                tags = nodetags.filter(name="dataPlaneIp")
+                dataPlaneIp = tags[0] if tags
+
             node_dict = {
                 "hostname": node.name,
                 "hostManagementIp": "%s/%s" % (nodeip, mgmt_subnet_bits),
