@@ -153,22 +153,26 @@ class SyncONOSApp(SyncInstanceUsingAnsible):
             file(os.path.join(o.files_dir, fn),"w").write(" " +value)
             o.early_rest_configs.append( {"endpoint": endpoint, "fn": fn} )
 
-        if "autogenerate" in attrs.keys():
-            prop_name = attrs[name]
-            if prop_name:
-                value = "foo" # Autogenerate the config here
-                tas = TenantAttribute.objects.filter(tenant=o, name=prop_name)
-                if tas:
-                    ta = tas[0]
-                    if ta.value != value:
-                        self.info("updating attribute %s" % prop_name)
-                        ta.value = value
-                        ta.save()
-                else:
-                    self.info("adding attribute %s" % prop_name)
-                    ta = TenantAttribute(tenant=o, name=prop_name, value=value)
+        # Generate config files and save them to the appropriate tenant attributes
+        autogen = []
+        for key, value in attrs.iteritems():
+            if key == "autogenerate" and value:
+                autogen.append(value)
+        for config in autogen:
+            value = "foo" # Autogenerate the config here
+            tas = TenantAttribute.objects.filter(tenant=o, name=config)
+            if tas:
+                ta = tas[0]
+                if ta.value != value:
+                    self.info("updating attribute %s" % config)
+                    ta.value = value
                     ta.save()
-
+                    attrs[config] = value
+            else:
+                self.info("adding attribute %s" % config)
+                ta = TenantAttribute(tenant=o, name=config, value=value)
+                ta.save()
+                attrs[config] = value
 
         for name in attrs.keys():
             value = attrs[name]
