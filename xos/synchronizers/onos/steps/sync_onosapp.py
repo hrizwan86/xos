@@ -14,7 +14,7 @@ from synchronizers.base.ansible import run_template
 from synchronizers.base.syncstep import SyncStep
 from synchronizers.base.ansible import run_template_ssh
 from synchronizers.base.SyncInstanceUsingAnsible import SyncInstanceUsingAnsible
-from core.models import Service, Slice, ControllerSlice, ControllerUser
+from core.models import Service, Slice, ControllerSlice, ControllerUser, TenantAttribute
 from services.onos.models import ONOSService, ONOSApp
 from xos.logger import Logger, logging
 
@@ -152,6 +152,23 @@ class SyncONOSApp(SyncInstanceUsingAnsible):
             endpoint = name[5:]
             file(os.path.join(o.files_dir, fn),"w").write(" " +value)
             o.early_rest_configs.append( {"endpoint": endpoint, "fn": fn} )
+
+        if "autogenerate" in attrs.keys():
+            prop_name = attrs[name]
+            if prop_name:
+                value = "foo" # Autogenerate the config here
+                tas = TenantAttribute.objects.filter(tenant=o, name=prop_name)
+                if tas:
+                    ta = tas[0]
+                    if ta.value != value:
+                        self.info("updating attribute %s" % prop_name)
+                        ta.value = value
+                        ta.save()
+                else:
+                    self.info("adding attribute %s" % prop_name)
+                    ta = TenantAttribute(tenant=o, name=prop_name, value=value)
+                    ta.save()
+
 
         for name in attrs.keys():
             value = attrs[name]
