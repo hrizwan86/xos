@@ -144,6 +144,9 @@ node_types:
             dependencies:
                 type: string
                 required: false
+            autogenerate:
+                type: string
+                required: false
 
     tosca.nodes.ONOSvBNGApp:
         derived_from: tosca.nodes.Root
