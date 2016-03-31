@@ -4,7 +4,7 @@ describe('The User List', () => {
   
   var scope, element, isolatedScope, httpBackend;
 
-  beforeEach(module('xos.contentProvider'));
+  beforeEach(module('xos.truckroll'));
   beforeEach(module('templates'));
 
   beforeEach(inject(function($httpBackend, $compile, $rootScope){
@@ -13,7 +13,7 @@ describe('The User List', () => {
     // Setting up mock request
     $httpBackend.expectGET('/xos/users/?no_hyperlinks=1').respond([
       {
-        email: 'matteo.scandolo@link-me.it',
+        email: 'teo@onlab.us',
         firstname: 'Matteo',
         lastname: 'Scandolo' 
       }
@@ -29,7 +29,7 @@ describe('The User List', () => {
   it('should load 1 users', () => {
     httpBackend.flush();
     expect(isolatedScope.users.length).toBe(1);
-    expect(isolatedScope.users[0].email).toEqual('matteo.scandolo@link-me.it');
+    expect(isolatedScope.users[0].email).toEqual('teo@onlab.us');
     expect(isolatedScope.users[0].firstname).toEqual('Matteo');
     expect(isolatedScope.users[0].lastname).toEqual('Scandolo');
   });
