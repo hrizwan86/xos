@@ -175,6 +175,7 @@ INSTALLED_APPS = (
     'core',
     'services.hpc',
     'services.cord',
+    'services.ecord',
     'services.helloworldservice_complete',
     'services.onos',
     'services.ceilometer',
